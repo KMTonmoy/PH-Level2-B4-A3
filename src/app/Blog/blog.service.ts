@@ -5,7 +5,7 @@ const createBlog = async (title: string, content: string, authorId: string) => {
         const newBlog = new BlogModel({
             title,
             content,
-
+            author: authorId,
         });
 
         const savedBlog = await newBlog.save();
