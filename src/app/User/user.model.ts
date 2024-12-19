@@ -40,3 +40,4 @@ userSchema.methods.isPasswordMatch = async function (password: string): Promise<
 const UserModel: Model<IUser> = mongoose.model<IUser>('User', userSchema);
 
 export default UserModel;
+ 

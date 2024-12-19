@@ -1,29 +1,26 @@
-import { Schema, model, Types } from 'mongoose';
-import { Blog } from './blog.interface';
+import mongoose, { Schema, Document, Model } from 'mongoose';
 
-const blogSchema = new Schema<Blog>(
+export interface IBlogPost extends Document {
+  title: string;
+  content: string;
+  author: mongoose.Types.ObjectId;
+  isPublished: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const blogPostSchema: Schema<IBlogPost> = new Schema(
   {
-    title: {
-      type: String,
-      required: [true, 'Title is required'],
-    },
-    content: {
-      type: String,
-      required: [true, 'Content is required'],
-    },
-    author: {
-      type: Types.ObjectId,
-      ref: 'User', 
-      required: [true, 'Author is required'],
-    },
-    isPublished: {
-      type: Boolean,
-      default: true, 
-    },
+    title: { type: String, required: true },
+    content: { type: String, required: true },
+    author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    isPublished: { type: Boolean, default: true },
   },
   {
-    timestamps: true,  
+    timestamps: true,
   }
 );
 
-export const BlogModel = model<Blog>('Blog', blogSchema);
+const BlogPostModel: Model<IBlogPost> = mongoose.model<IBlogPost>('BlogPost', blogPostSchema);
+
+export default BlogPostModel;

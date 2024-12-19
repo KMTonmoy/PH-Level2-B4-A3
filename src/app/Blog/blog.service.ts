@@ -1,15 +1,21 @@
-import { BlogModel } from './blog.model';
+import BlogModel from './blog.model';
 
-const getAllBlogsFromDB = async () => {
+const createBlog = async (title: string, content: string, authorId: string) => {
     try {
-        const result = await BlogModel.find();
-        return result;
-    } catch (err) {
-        console.error('Error retrieving blogs:', err);
-        throw new Error('Failed to retrieve blogs');
+        const newBlog = new BlogModel({
+            title,
+            content,
+
+        });
+
+        const savedBlog = await newBlog.save();
+        return savedBlog;
+    } catch (error) {
+        console.error('Error creating blog:', error);
+        throw new Error('Failed to create blog');
     }
 };
 
 export const BlogServices = {
-    getAllBlogsFromDB,
+    createBlog,
 };
