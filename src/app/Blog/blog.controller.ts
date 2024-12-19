@@ -9,27 +9,22 @@ export const createBlog = async (req: Request, res: Response, next: NextFunction
         if (!token) {
             return res.status(401).json({ message: 'Authentication required' });
         }
-
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret') as { id: string };
         const user = await UserModel.findById(decoded.id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-
         const { title, content, isPublished = true } = req.body;
         if (!title || !content) {
             return res.status(400).json({ message: 'Title and content are required' });
         }
-
         const blogPost = new BlogPostModel({
             title,
             content,
             author: user._id,
             isPublished,
         });
-
         await blogPost.save();
-
         return res.status(201).json({
             success: true,
             message: 'Blog created successfully',
@@ -52,38 +47,31 @@ export const createBlog = async (req: Request, res: Response, next: NextFunction
 
 export const updateBlog = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const { id } = req.params;
         const token = req.header('Authorization')?.replace('Bearer ', '');
         if (!token) {
             return res.status(401).json({ message: 'Authentication required' });
         }
-
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret') as { id: string };
         const user = await UserModel.findById(decoded.id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-
-        const { id } = req.params;
-        const { title, content } = req.body;
-
         const blogPost = await BlogPostModel.findById(id);
         if (!blogPost) {
             return res.status(404).json({ message: 'Blog post not found' });
         }
-
         if (blogPost.author.toString() !== user._id.toString()) {
-            return res.status(403).json({ message: 'You can only update your own blog post' });
+            return res.status(403).json({ message: 'You are not authorized to update this blog post' });
         }
-
-        if (!title && !content) {
-            return res.status(400).json({ message: 'Title or content is required to update the blog' });
+        const { title, content, isPublished } = req.body;
+        if (!title || !content) {
+            return res.status(400).json({ message: 'Title and content are required' });
         }
-
-        blogPost.title = title || blogPost.title;
-        blogPost.content = content || blogPost.content;
-
+        blogPost.title = title;
+        blogPost.content = content;
+        blogPost.isPublished = isPublished ?? blogPost.isPublished;
         await blogPost.save();
-
         return res.status(200).json({
             success: true,
             message: 'Blog updated successfully',
