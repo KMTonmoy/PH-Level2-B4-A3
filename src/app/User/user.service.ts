@@ -1,5 +1,6 @@
 import UserModel from './user.model';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
 const createUser = async (name: string, email: string, password: string, role: 'admin' | 'user' = 'user') => {
     try {
@@ -29,7 +30,38 @@ const getAllUsersFromDB = async () => {
     }
 };
 
+const loginUser = async (email: string, password: string) => {
+    try {
+        const user = await UserModel.findOne({ email });
+        if (!user) {
+            throw new Error('Invalid credentials');
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            throw new Error('Invalid credentials');
+        }
+
+        const token = jwt.sign(
+            { userId: user._id, role: user.role },
+            process.env.JWT_SECRET || 'your_jwt_secret',
+            { expiresIn: '1h' }
+        );
+
+        return {
+            success: true,
+            message: 'Login successful',
+            statusCode: 200,
+            data: { token },
+        };
+    } catch (err) {
+        console.error('Error logging in user:', err);
+        throw new Error('Login failed');
+    }
+};
+
 export const UserServices = {
     createUser,
     getAllUsersFromDB,
+    loginUser,
 };

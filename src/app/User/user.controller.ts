@@ -1,4 +1,5 @@
 import UserModel from "./user.model";
+import jwt from 'jsonwebtoken';
 
 async function createUser(data: { name: string; email: string; password: string }) {
     try {
@@ -34,7 +35,36 @@ async function verifyPassword(userId: string, password: string) {
     }
 }
 
+async function loginUser(email: string, password: string) {
+    try {
+        const user = await UserModel.findOne({ email });
+        if (!user) {
+            throw new Error('Invalid credentials');
+        }
+
+        const isMatch = await user.isPasswordMatch(password);
+        if (!isMatch) {
+            throw new Error('Invalid credentials');
+        }
+
+        const token = jwt.sign({ id: user._id, email: user.email }, 'your_jwt_secret', { expiresIn: '1h' });
+
+        return {
+            success: true,
+            message: 'Login successful',
+            statusCode: 200,
+            data: {
+                token,
+            },
+        };
+    } catch (err) {
+        console.error('Error logging in:', err);
+        throw new Error('Invalid credentials');
+    }
+}
+
 export const userControllers = {
     createUser,
     verifyPassword,
+    loginUser,
 };

@@ -21,6 +21,24 @@ router.post('/auth/register', async (req: Request, res: Response, next: NextFunc
     }
 });
 
+router.post('/auth/login', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { email, password } = req.body;
+        const loginResponse = await userControllers.loginUser(email, password);
+
+        res.status(loginResponse.statusCode).json({
+            success: loginResponse.success,
+            message: loginResponse.message,
+            statusCode: loginResponse.statusCode,
+            data: {
+                token: loginResponse.data.token,
+            },
+        });
+    } catch (err) {
+        next(err);
+    }
+});
+
 router.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     console.error('Error:', err.message);
     res.status(500).json({
