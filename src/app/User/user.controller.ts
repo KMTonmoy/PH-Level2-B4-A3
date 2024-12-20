@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 async function createUser(data: { name: string; email: string; password: string }) {
     try {
         const { name, email, password } = data;
-        const user = await UserModel.create({ name, email, password, role: 'admin' });
+        const user = await UserModel.create({ name, email, password, role: 'user' });
         return user;
     } catch (error) {
         throw error;

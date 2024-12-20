@@ -14,6 +14,9 @@ export const createBlog = async (req: Request, res: Response, next: NextFunction
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
+        if (user.isBlocked) {
+            return res.status(403).json({ message: 'Your account is blocked. You cannot create blogs.' });
+        }
         const { title, content, isPublished = true } = req.body;
         if (!title || !content) {
             return res.status(400).json({ message: 'Title and content are required' });
@@ -55,6 +58,9 @@ export const updateBlog = async (req: Request, res: Response, next: NextFunction
         const user = await UserModel.findById(decoded.id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
+        }
+        if (user.isBlocked) {
+            return res.status(403).json({ message: 'Your account is blocked. You cannot update blogs.' });
         }
         const blogPost = await BlogModel.findById(id);
         if (!blogPost) {
@@ -102,6 +108,9 @@ export const deleteBlog = async (req: Request, res: Response, next: NextFunction
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
+        if (user.isBlocked) {
+            return res.status(403).json({ message: 'Your account is blocked. You cannot delete blogs.' });
+        }
         const blogPost = await BlogModel.findById(id);
         if (!blogPost) {
             return res.status(404).json({ message: 'Blog post not found' });
@@ -134,6 +143,9 @@ export const deleteBlogByAdmin = async (req: Request, res: Response, next: NextF
         }
         if (decoded.role !== 'admin') {
             return res.status(403).json({ message: 'Access denied, admin only' });
+        }
+        if (user.isBlocked) {
+            return res.status(403).json({ message: 'Your account is blocked. You cannot delete blogs.' });
         }
         const blogPost = await BlogModel.findById(id);
         if (!blogPost) {
