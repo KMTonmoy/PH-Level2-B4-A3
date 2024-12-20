@@ -123,6 +123,8 @@ export const deleteBlog = async (req: Request, res: Response, next: NextFunction
     }
 };
 
+
+
 export const getAllBlogs = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { search, sortBy = 'createdAt', sortOrder = 'desc', filter } = req.query;
