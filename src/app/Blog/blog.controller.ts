@@ -40,7 +40,6 @@ export const createBlog = async (req: Request, res: Response, next: NextFunction
             },
         });
     } catch (error) {
-        console.error('Error creating blog post:', error);
         return next(error);
     }
 };
@@ -87,7 +86,6 @@ export const updateBlog = async (req: Request, res: Response, next: NextFunction
             },
         });
     } catch (error) {
-        console.error('Error updating blog post:', error);
         return next(error);
     }
 };
@@ -118,17 +116,43 @@ export const deleteBlog = async (req: Request, res: Response, next: NextFunction
             statusCode: 200,
         });
     } catch (error) {
-        console.error('Error deleting blog post:', error);
         return next(error);
     }
 };
 
-
+export const deleteBlogByAdmin = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { id } = req.params;
+        const token = req.header('Authorization')?.replace('Bearer ', '');
+        if (!token) {
+            return res.status(401).json({ message: 'Authentication required' });
+        }
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret') as { id: string, role: string };
+        const user = await UserModel.findById(decoded.id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        if (decoded.role !== 'admin') {
+            return res.status(403).json({ message: 'Access denied, admin only' });
+        }
+        const blogPost = await BlogModel.findById(id);
+        if (!blogPost) {
+            return res.status(404).json({ message: 'Blog post not found' });
+        }
+        await blogPost.deleteOne();
+        return res.status(200).json({
+            success: true,
+            message: 'Blog deleted successfully by admin',
+            statusCode: 200,
+        });
+    } catch (error) {
+        return next(error);
+    }
+};
 
 export const getAllBlogs = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { search, sortBy = 'createdAt', sortOrder = 'desc', filter } = req.query;
-
         const searchFilter = search
             ? {
                 $or: [
@@ -137,17 +161,13 @@ export const getAllBlogs = async (req: Request, res: Response, next: NextFunctio
                 ],
             }
             : {};
-
         const authorFilter = filter ? { author: filter } : {};
-
         const blogs = await BlogModel.find({
             ...searchFilter,
             ...authorFilter,
         })
             .sort({ [sortBy as string]: sortOrder === 'asc' ? 1 : -1 })
             .populate('author', 'name email');
-
-
         return res.status(200).json({
             success: true,
             message: 'Blogs fetched successfully',
@@ -155,7 +175,6 @@ export const getAllBlogs = async (req: Request, res: Response, next: NextFunctio
             data: blogs,
         });
     } catch (error) {
-        console.error('Error fetching blogs:', error);
         return next(error);
     }
 };
@@ -164,5 +183,6 @@ export const BlogController = {
     createBlog,
     updateBlog,
     deleteBlog,
+    deleteBlogByAdmin,
     getAllBlogs,
 };

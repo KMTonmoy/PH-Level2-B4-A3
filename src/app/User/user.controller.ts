@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 async function createUser(data: { name: string; email: string; password: string }) {
     try {
         const { name, email, password } = data;
-        const user = await UserModel.create({ name, email, password, role: 'user' });
+        const user = await UserModel.create({ name, email, password, role: 'admin' });
         return user;
     } catch (error) {
         throw error;
@@ -35,10 +35,10 @@ async function loginUser(email: string, password: string) {
             throw new Error('Invalid credentials');
         }
 
-        // Ensure that the role is included in the JWT payload
+
         const token = jwt.sign(
-            { id: user._id, email: user.email, role: user.role }, 
-            'your_jwt_secret', 
+            { id: user._id, email: user.email, role: user.role },
+            'your_jwt_secret',
             { expiresIn: '1y' }
         );
 
@@ -67,11 +67,11 @@ async function blockUser(userId: string, adminToken: string) {
             throw new Error('User not found');
         }
 
-        console.log('User found:', user); // Log the user found in the database
+        console.log('User found:', user);
         user.isBlocked = true;
-        
+
         const savedUser = await user.save();
-        console.log('User blocked successfully:', savedUser); // Log after saving the user
+        console.log('User blocked successfully:', savedUser);
 
         return {
             success: true,
@@ -79,7 +79,7 @@ async function blockUser(userId: string, adminToken: string) {
             statusCode: 200,
         };
     } catch (error) {
-        console.error('Error blocking user:', error); // Log the error
+        console.error('Error blocking user:', error);
         throw new Error('Error blocking user');
     }
 }
