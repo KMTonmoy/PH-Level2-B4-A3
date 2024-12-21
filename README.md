@@ -38,7 +38,7 @@ Find the source code here: [GitHub Repository](https://github.com/KMTonmoy/PH-Le
 🚀 **Installation Process**
 1. Clone the repository:
    ```bash
-   git clone https://github.com/YourUsername/blog-post-api
+   git clone https://github.com/KMTonmoy/PH-Level2-B4-A3.git
    cd blog-post-api
    npm i 
 
